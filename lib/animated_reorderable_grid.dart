@@ -24,12 +24,30 @@ class AnimatedReorderableGrid extends StatefulWidget {
   /// The number of items in the cross axis.
   final int crossAxisCount;
 
-  //TODO: add documentation to this parameter
+  //TODO: add documentation to parameters
   final bool buildDefaultDragDetectors;
   final IndexedWidgetBuilder itemBuilder;
   final double rowHeight;
   final IndexedWidgetBuilder? rowBuilder;
   final List<(int row, int count)>? overriddenRowCounts;
+
+  /// A header row to show before the rows of the grid containing reorderable
+  /// items.
+  ///
+  /// If null, no header will appear before the grid.
+  final Widget? header;
+
+  /// A footer row to show after the rows of the grid containing reorderable
+  /// items.
+  ///
+  /// If null, no footer will appear before the grid.
+  final Widget? footer;
+
+  /// A [Widget] that is overlaid on top of the rows of the grid, including the
+  /// header and footer, if present.
+  ///
+  /// If null, no overlay will appear over the grid.
+  final Widget? overlay;
   final ReorderItemProxyDecorator? proxyDecorator;
   final Object Function(int) keyBuilder;
   final ReorderCallback onReorder;
@@ -51,6 +69,9 @@ class AnimatedReorderableGrid extends StatefulWidget {
     required this.rowHeight,
     this.rowBuilder,
     this.overriddenRowCounts,
+    this.header,
+    this.footer,
+    this.overlay,
     this.proxyDecorator,
     required this.keyBuilder,
     required this.onReorder,
@@ -122,34 +143,41 @@ class _AnimatedReorderableGridState extends State<AnimatedReorderableGrid> {
       physics:
           _isScrollable ? widget.physics : const NeverScrollableScrollPhysics(),
       controller: widget.controller,
-      child: SizedBox(
-        height: numRows * widget.rowHeight,
-        child: Stack(
-          children: [
-            Column(
+      child: Column(
+        children: [
+          if(widget.header != null) widget.header!,
+          SizedBox(
+            height: numRows * widget.rowHeight,
+            child: Stack(
               children: [
-                for (int i = 0; i < numRows; i++)
-                  widget.rowBuilder?.call(context, i) ??
-                      widget._defaultRowBuilder(),
+                Column(
+                  children: [
+                    for (int i = 0; i < numRows; i++)
+                      widget.rowBuilder?.call(context, i) ??
+                          widget._defaultRowBuilder(),
+                  ],
+                ),
+                NotificationListener<ReorderableDragNotification>(
+                  onNotification: _onReorderDrag,
+                  child: _ReorderableGridBase(
+                    length: widget.length,
+                    crossAxisCount: widget.crossAxisCount,
+                    rowHeight: widget.rowHeight,
+                    overriddenRowCounts: widget.overriddenRowCounts,
+                    itemBuilder: _itemBuilder,
+                    proxyDecorator:
+                        widget.proxyDecorator ?? widget._defaultProxyDecorator,
+                    autoScrollerVelocityScalar: widget.autoScrollerVelocityScalar,
+                    keyBuilder: widget.keyBuilder,
+                    onReorder: widget.onReorder,
+                  ),
+                ),
+                if (widget.overlay != null) widget.overlay!,
               ],
             ),
-            NotificationListener<ReorderableDragNotification>(
-              onNotification: _onReorderDrag,
-              child: _ReorderableGridBase(
-                length: widget.length,
-                crossAxisCount: widget.crossAxisCount,
-                rowHeight: widget.rowHeight,
-                overriddenRowCounts: widget.overriddenRowCounts,
-                itemBuilder: _itemBuilder,
-                proxyDecorator:
-                    widget.proxyDecorator ?? widget._defaultProxyDecorator,
-                autoScrollerVelocityScalar: widget.autoScrollerVelocityScalar,
-                keyBuilder: widget.keyBuilder,
-                onReorder: widget.onReorder,
-              ),
-            ),
-          ],
-        ),
+          ),
+          if(widget.footer != null) widget.footer!,
+        ],
       ),
     );
   }

@@ -1,10 +1,11 @@
 name: animated_reorderable_grid
-description: "A grid of items that can be reordered with responsive animations."
-version: 0.0.1
+description: A grid of items that can be reordered with responsive animations.
+version: 0.0.2
+repository: https://github.com/benweschler/animated_reorderable_grid
 
 environment:
   sdk: ^3.5.0
-  flutter: ">=1.17.0"
+  flutter: '>=1.17.0'
 
 dependencies:
   flutter:
