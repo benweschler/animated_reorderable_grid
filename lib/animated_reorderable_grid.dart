@@ -143,40 +143,44 @@ class _AnimatedReorderableGridState extends State<AnimatedReorderableGrid> {
       physics:
           _isScrollable ? widget.physics : const NeverScrollableScrollPhysics(),
       controller: widget.controller,
-      child: Column(
+      child: Stack(
         children: [
-          if(widget.header != null) widget.header!,
-          SizedBox(
-            height: numRows * widget.rowHeight,
-            child: Stack(
-              children: [
-                Column(
+          Column(
+            children: [
+              if (widget.header != null) widget.header!,
+              SizedBox(
+                height: numRows * widget.rowHeight,
+                child: Stack(
                   children: [
-                    for (int i = 0; i < numRows; i++)
-                      widget.rowBuilder?.call(context, i) ??
-                          widget._defaultRowBuilder(),
+                    Column(
+                      children: [
+                        for (int i = 0; i < numRows; i++)
+                          widget.rowBuilder?.call(context, i) ??
+                              widget._defaultRowBuilder(),
+                      ],
+                    ),
+                    NotificationListener<ReorderableDragNotification>(
+                      onNotification: _onReorderDrag,
+                      child: _ReorderableGridBase(
+                        length: widget.length,
+                        crossAxisCount: widget.crossAxisCount,
+                        rowHeight: widget.rowHeight,
+                        overriddenRowCounts: widget.overriddenRowCounts,
+                        itemBuilder: _itemBuilder,
+                        proxyDecorator:
+                            widget.proxyDecorator ?? widget._defaultProxyDecorator,
+                        autoScrollerVelocityScalar: widget.autoScrollerVelocityScalar,
+                        keyBuilder: widget.keyBuilder,
+                        onReorder: widget.onReorder,
+                      ),
+                    ),
                   ],
                 ),
-                NotificationListener<ReorderableDragNotification>(
-                  onNotification: _onReorderDrag,
-                  child: _ReorderableGridBase(
-                    length: widget.length,
-                    crossAxisCount: widget.crossAxisCount,
-                    rowHeight: widget.rowHeight,
-                    overriddenRowCounts: widget.overriddenRowCounts,
-                    itemBuilder: _itemBuilder,
-                    proxyDecorator:
-                        widget.proxyDecorator ?? widget._defaultProxyDecorator,
-                    autoScrollerVelocityScalar: widget.autoScrollerVelocityScalar,
-                    keyBuilder: widget.keyBuilder,
-                    onReorder: widget.onReorder,
-                  ),
-                ),
-                if (widget.overlay != null) widget.overlay!,
-              ],
-            ),
+              ),
+              if (widget.footer != null) widget.footer!,
+            ],
           ),
-          if(widget.footer != null) widget.footer!,
+          if(widget.overlay != null) Positioned.fill(child: widget.overlay!),
         ],
       ),
     );
@@ -775,40 +779,36 @@ class _ReorderableGridBaseState extends State<_ReorderableGridBase>
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return CustomMultiChildLayout(
+      delegate: _ReorderableGridLayoutDelegate(
+        ids: [for (int i = 0; i < widget.length; i++) widget.keyBuilder(i)],
+        rowHeight: widget.rowHeight,
+        dragInfo: _dragInfo,
+        repositionOffsets: _repositionOffsets,
+        repositionAnimationControllers: _repositionAnimationControllers,
+        animatePosition: _animateReposition,
+        updateCollision: _updateCollision,
+        getDefaultCenter: _getDefaultCenter,
+        getCrossAxisCount: _getCrossAxisCount,
+        getRowFromPosition: _getRowFromPosition,
+        //TODO: messy
+        getIndicesInRow: (row) {
+          final indices = _getIndicesInRow(row);
+          indices.removeWhere((index) => index >= widget.length);
+          return indices;
+        },
+        scrollablePosition: Scrollable.of(context).position,
+      ),
       children: [
-        CustomMultiChildLayout(
-          delegate: _ReorderableGridLayoutDelegate(
-            ids: [for (int i = 0; i < widget.length; i++) widget.keyBuilder(i)],
-            rowHeight: widget.rowHeight,
-            dragInfo: _dragInfo,
-            repositionOffsets: _repositionOffsets,
-            repositionAnimationControllers: _repositionAnimationControllers,
-            animatePosition: _animateReposition,
-            updateCollision: _updateCollision,
-            getDefaultCenter: _getDefaultCenter,
-            getCrossAxisCount: _getCrossAxisCount,
-            getRowFromPosition: _getRowFromPosition,
-            //TODO: messy
-            getIndicesInRow: (row) {
-              final indices = _getIndicesInRow(row);
-              indices.removeWhere((index) => index >= widget.length);
-              return indices;
-            },
-            scrollablePosition: Scrollable.of(context).position,
+        for (int index = 0; index < widget.length; index++)
+          LayoutId(
+            id: widget.keyBuilder(index),
+            child: _ReorderableItem(
+              index: index,
+              gridState: this,
+              child: widget.itemBuilder(context, index),
+            ),
           ),
-          children: [
-            for (int index = 0; index < widget.length; index++)
-              LayoutId(
-                id: widget.keyBuilder(index),
-                child: _ReorderableItem(
-                  index: index,
-                  gridState: this,
-                  child: widget.itemBuilder(context, index),
-                ),
-              )
-          ],
-        ),
       ],
     );
   }
