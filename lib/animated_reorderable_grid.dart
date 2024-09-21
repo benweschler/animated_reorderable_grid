@@ -183,8 +183,8 @@ class _AnimatedReorderableGridState extends State<AnimatedReorderableGrid> {
           ),
           if (widget.overlay != null)
             // Ensure that the overlay does not block gestures on the grid.
-            IgnorePointer(
-              child: Positioned.fill(
+            Positioned.fill(
+              child: IgnorePointer(
                 child: widget.overlay!,
               ),
             ),
