@@ -791,7 +791,7 @@ class _ReorderableGridBaseState extends State<_ReorderableGridBase>
         getDefaultCenter: _getDefaultCenter,
         getCrossAxisCount: _getCrossAxisCount,
         getRowFromPosition: _getRowFromPosition,
-        //TODO: messy
+        //TODO: messy. this should be inside of getIndicesInRow. caller should not have the responsibility of checking this.
         getIndicesInRow: (row) {
           final indices = _getIndicesInRow(row);
           indices.removeWhere((index) => index >= widget.length);

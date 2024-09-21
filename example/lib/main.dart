@@ -33,16 +33,12 @@ class _ReorderableAppState extends State<ReorderableApp> {
         body: SafeArea(
           bottom: false,
           child: AnimatedReorderableGrid(
-            header: Container(height: 50, color: Colors.amber),
-            footer: Container(height: 50, color: Colors.amber),
-            overlay: Container(color: Colors.purple,),
             length: _tileLabels.length,
             crossAxisCount: 2,
             rowHeight: _segmentHeight,
             primary: true,
             overriddenRowCounts: const [(0, 1), (5, 1)],
-            //keyBuilder: (index) => _tileLabels[index],
-            keyBuilder: (index) => index,
+            keyBuilder: (index) => ValueKey(index),
             itemBuilder: (_, index) => Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
