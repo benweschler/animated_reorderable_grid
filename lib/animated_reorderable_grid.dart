@@ -167,9 +167,10 @@ class _AnimatedReorderableGridState extends State<AnimatedReorderableGrid> {
                         rowHeight: widget.rowHeight,
                         overriddenRowCounts: widget.overriddenRowCounts,
                         itemBuilder: _itemBuilder,
-                        proxyDecorator:
-                            widget.proxyDecorator ?? widget._defaultProxyDecorator,
-                        autoScrollerVelocityScalar: widget.autoScrollerVelocityScalar,
+                        proxyDecorator: widget.proxyDecorator ??
+                            widget._defaultProxyDecorator,
+                        autoScrollerVelocityScalar:
+                            widget.autoScrollerVelocityScalar,
                         keyBuilder: widget.keyBuilder,
                         onReorder: widget.onReorder,
                       ),
@@ -180,7 +181,13 @@ class _AnimatedReorderableGridState extends State<AnimatedReorderableGrid> {
               if (widget.footer != null) widget.footer!,
             ],
           ),
-          if(widget.overlay != null) Positioned.fill(child: widget.overlay!),
+          if (widget.overlay != null)
+            // Ensure that the overlay does not block gestures on the grid.
+            IgnorePointer(
+              child: Positioned.fill(
+                child: widget.overlay!,
+              ),
+            ),
         ],
       ),
     );
