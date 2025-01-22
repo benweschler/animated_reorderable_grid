@@ -508,10 +508,14 @@ class _ReorderableGridBaseState extends State<_ReorderableGridBase>
       // progressively speed up or slow down.
       if (direction == Direction.forward &&
           (controller.status == AnimationStatus.forward ||
-              controller.status == AnimationStatus.completed)) return;
+              controller.status == AnimationStatus.completed)) {
+        return;
+      }
       if (direction == Direction.reverse &&
           (controller.status == AnimationStatus.reverse ||
-              controller.status == AnimationStatus.dismissed)) return;
+              controller.status == AnimationStatus.dismissed)) {
+        return;
+      }
     } else {
       controller = _createPositionAnimationController(
         position: repositionOffset,
@@ -774,7 +778,9 @@ class _ReorderableGridBaseState extends State<_ReorderableGridBase>
   void _handleScrollableAutoScrolled() {
     if (_dragInfo ==
             null || /* TODO: CURRENT better marker for drag having ended than zero offset. it seems auto scrolling continues for a frame after drag ending.  */
-        _dragInfo!.dragOffset == Offset.zero) return;
+        _dragInfo!.dragOffset == Offset.zero) {
+      return;
+    }
 
     _startAutoScrollIfNecessary();
     _dragInfo!.autoScrollPositions(context.findRenderObject() as RenderBox);
@@ -925,7 +931,9 @@ class _ReorderableGridLayoutDelegate extends MultiChildLayoutDelegate {
     // takes effect in subsequent frames.
     for (var entry in extraneousRepositions) {
       if (repositionAnimationControllers.get(entry.key)?.status ==
-          AnimationStatus.reverse) continue;
+          AnimationStatus.reverse) {
+        continue;
+      }
 
       updateCollision(null);
       animatePosition(entry.key, Offset.zero, Direction.reverse);
@@ -1083,6 +1091,8 @@ class _ReorderableItemState extends State<_ReorderableItem> {
 
   @override
   Widget build(BuildContext context) {
+    widget.gridState._registerItem(index, this);
+
     return _dragging
         ? SizedBox.fromSize(size: widget.gridState._dragInfo?.itemSize)
         : widget.child;
